@@ -9,10 +9,13 @@ import {
 } from "@material-ui/core";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import { isArray, isEmpty, isInteger } from "lodash";
+import { formatDistance } from "date-fns";
+import { ja } from "date-fns/locale";
 import { createDonations, fetchDonations } from "../api/donations";
 import settings from "../settings";
 import { thousandCommas } from "../utils";
 import { DonationsModel } from "../types";
+import { Confirm } from "../component";
 
 const amountMin = 1;
 const amountMax = 5000;
@@ -26,6 +29,16 @@ const sumTotal = (list: DonationsModel[]): number => {
   }
   return total;
 };
+
+const isOverDeadline = (): boolean => {
+  const now = new Date();
+  const { 締切 } = settings.app.donation;
+  return now > 締切;
+};
+const diffDeadline = (): string =>
+  isOverDeadline()
+    ? "募集終了しました"
+    : formatDistance(settings.app.donation.締切, new Date(), { locale: ja });
 
 const validateName = (name: string): string => {
   if (!name) {
@@ -44,7 +57,8 @@ const validateAmount = (amount: number | string): string => {
   return "";
 };
 
-const isOverTarget = (current: number): boolean => current >= settings.目標額;
+const isOverTarget = (current: number): boolean =>
+  current >= settings.app.donation.目標額;
 
 export const Donation = (): JSX.Element => {
   const [name, setName] = useState<string>("");
@@ -53,6 +67,8 @@ export const Donation = (): JSX.Element => {
   const [amountValid, setAmountValid] = useState<string>("");
   const [total, setTotal] = useState<number>(0);
   const [refresh, setRefresh] = useState<boolean>(false);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
   useEffect(() => {
     const refreshPage = async () => {
       const res = await fetchDonations();
@@ -77,7 +93,14 @@ export const Donation = (): JSX.Element => {
   const doRefresh = () => {
     setRefresh(!refresh);
   };
-  const onDonateClick = async () => {
+  const onDonateClick = () => {
+    setDialogOpen(true);
+  };
+  const handleCancel = () => {
+    setDialogOpen(false);
+  };
+  const handleSubmit = async () => {
+    setDialogOpen(false);
     const res = await createDonations({
       name,
       amount: typeof amount === "string" ? 0 : amount || 0,
@@ -93,14 +116,39 @@ export const Donation = (): JSX.Element => {
           className="margin-tb-8 column-container ai-center-container"
           style={{ width: "80%", maxWidth: 500, padding: "10px" }}
         >
-          <Typography variant="h5">吉田さんプレゼント代</Typography>
-          <Typography variant="h6">
-            {`現在の支援総額：${thousandCommas(total || 0)}円`}
-          </Typography>
-          <Typography>
-            {`目標金額は：${thousandCommas(settings.目標額)}円`}
-          </Typography>
-          <Typography>締め切り：3/19(金)</Typography>
+          <div>
+            <Typography variant="h5">吉田さんプレゼント代</Typography>
+            <Typography
+              style={{ fontSize: 14, verticalAlign: "middle" }}
+              color="textSecondary"
+              gutterBottom
+            >
+              ・現在の支援総額
+            </Typography>
+            <Typography variant="h5" align="center">
+              {`${thousandCommas(total || 0)}円`}
+            </Typography>
+            <Typography
+              style={{ fontSize: 14 }}
+              color="textSecondary"
+              gutterBottom
+            >
+              ・目標金額
+            </Typography>
+            <Typography variant="h5" align="center">
+              {`${thousandCommas(settings.app.donation.目標額)}円`}
+            </Typography>
+            <Typography
+              style={{ fontSize: 14 }}
+              color="textSecondary"
+              gutterBottom
+            >
+              ・募集終了まで残り
+            </Typography>
+            <Typography variant="h5" align="center">
+              {diffDeadline()}
+            </Typography>
+          </div>
         </Card>
         <Card style={{ width: "80%", maxWidth: 500, padding: "0px 20px" }}>
           <div className="margin-tb-8 row-container jc-flex-end-container">
@@ -130,7 +178,14 @@ export const Donation = (): JSX.Element => {
             <Button
               color="primary"
               variant="contained"
-              disabled={!!(nameValid || amountValid || isOverTarget(total))}
+              disabled={
+                !!(
+                  validateName(name) ||
+                  validateAmount(amount) ||
+                  isOverTarget(total) ||
+                  isOverDeadline()
+                )
+              }
               onClick={onDonateClick}
             >
               支援する
@@ -142,6 +197,22 @@ export const Donation = (): JSX.Element => {
         </Card>
       </div>
       {isOverTarget(total) && <Confetti />}
+      <Confirm
+        open={dialogOpen}
+        title="ご確認"
+        content={
+          // eslint-disable-next-line react/jsx-wrap-multilines
+          <>
+            <div style={{ padding: "0px 20px" }}>
+              <Typography>{`お名前:${name}`}</Typography>
+              <Typography>{`金額:${amount}`}</Typography>
+            </div>
+          </>
+        }
+        onOkClick={handleSubmit}
+        onCancelClick={handleCancel}
+        PaperProps={{ style: { width: "50%" } }}
+      />
     </>
   );
 };

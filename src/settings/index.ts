@@ -8,7 +8,12 @@ export default {
   url: {
     donations: "/donations",
   },
-  目標額: 5275,
+  app: {
+    donation: {
+      目標額: 5275,
+      締切: new Date(2021, 2, 19, 23, 59, 59),
+    },
+  },
   constants: {
     newId: "__new__",
   },
