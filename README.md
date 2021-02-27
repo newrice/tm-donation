@@ -1,5 +1,12 @@
 # tm-donation
 
+## デプロイ
+
+### 変更の必要がない場合
+
+- `tm-donation/build`配下にのファイルたちを s3 にアップロード
+  - バケット/index.html になるように
+
 ## ビルド
 
 - **nodejs と yarn が必要**
@@ -13,7 +20,7 @@ tm-donation > yarn build
 ```
 
 - `tm-donation/build`配下にできたファイルたちを s3 にアップロード
-  - バケット/index.html みたいになるように
+  - バケット/index.html になるように
 
 ## api 仕様
 
