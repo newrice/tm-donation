@@ -205,7 +205,11 @@ export const Donation = (): JSX.Element => {
           <>
             <div style={{ padding: "0px 20px" }}>
               <Typography>{`お名前:${name}`}</Typography>
-              <Typography>{`金額:${amount}`}</Typography>
+              <Typography>
+                {`金額:${thousandCommas(
+                  typeof amount === "string" ? 0 : amount,
+                )}円`}
+              </Typography>
             </div>
           </>
         }
