@@ -50,6 +50,10 @@ amplify-authenticator {
   justify-content: center;
 }
 
+.jc-flex-end-container {
+  justify-content: flex-end;
+}
+
 .ai-strech-container {
   align-items: stretch;
 }

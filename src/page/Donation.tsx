@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, TextField, Typography } from "@material-ui/core";
+import {
+  Button,
+  Card,
+  IconButton,
+  TextField,
+  Typography,
+} from "@material-ui/core";
+import RefreshIcon from "@material-ui/icons/Refresh";
 import { isArray, isEmpty } from "lodash";
 import { createDonations, fetchDonations } from "../api/donations";
 import settings from "../settings";
@@ -38,13 +45,16 @@ export const Donation = (): JSX.Element => {
   const onAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(parseInt(event.target.value, 10));
   };
+  const doRefresh = () => {
+    setRefresh(!refresh);
+  };
   const onDonateClick = async () => {
     const res = await createDonations({
       name,
       amount: typeof amount === "string" ? 0 : amount || 0,
     });
     if (res.result && res.result.error) {
-      setRefresh(!refresh);
+      doRefresh();
     }
   };
   return (
@@ -62,6 +72,11 @@ export const Donation = (): JSX.Element => {
           </Typography>
         </Card>
         <Card style={{ width: "80%", maxWidth: 500, padding: "0px 20px" }}>
+          <div className="margin-tb-8 row-container jc-flex-end-container">
+            <IconButton size="small" onClick={doRefresh}>
+              <RefreshIcon />
+            </IconButton>
+          </div>
           <div className="margin-tb-8 column-container each-margin-tb-8-container">
             <TextField label="名前" value={name} onChange={onNameChange} />
             <TextField
