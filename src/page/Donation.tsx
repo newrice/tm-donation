@@ -100,6 +100,7 @@ export const Donation = (): JSX.Element => {
           <Typography>
             {`目標金額は：${thousandCommas(settings.目標額)}円`}
           </Typography>
+          <Typography>締め切り：3/19(金)</Typography>
         </Card>
         <Card style={{ width: "80%", maxWidth: 500, padding: "0px 20px" }}>
           <div className="margin-tb-8 row-container jc-flex-end-container">
