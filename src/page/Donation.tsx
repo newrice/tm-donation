@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Confetti from "react-confetti";
 import {
   Button,
   Card,
@@ -7,11 +8,14 @@ import {
   Typography,
 } from "@material-ui/core";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import { isArray, isEmpty } from "lodash";
+import { isArray, isEmpty, isInteger } from "lodash";
 import { createDonations, fetchDonations } from "../api/donations";
 import settings from "../settings";
 import { thousandCommas } from "../utils";
 import { DonationsModel } from "../types";
+
+const amountMin = 1;
+const amountMax = 5000;
 
 const sumTotal = (list: DonationsModel[]): number => {
   let total = 0;
@@ -23,10 +27,31 @@ const sumTotal = (list: DonationsModel[]): number => {
   return total;
 };
 
+const validateName = (name: string): string => {
+  if (!name) {
+    return "名前を入力してください";
+  }
+  return "";
+};
+
+const validateAmount = (amount: number | string): string => {
+  if (!amount) {
+    return "金額を入力してください";
+  }
+  if (!isInteger(amount) || amount < amountMin || amount > amountMax) {
+    return `${amountMin}〜${amountMax}の整数で入力してください`;
+  }
+  return "";
+};
+
+const isOverTarget = (current: number): boolean => current >= settings.目標額;
+
 export const Donation = (): JSX.Element => {
   const [name, setName] = useState<string>("");
+  const [nameValid, setNameValid] = useState<string>("");
   const [amount, setAmount] = useState<number | string>("");
-  const [total, setTotal] = useState<number>();
+  const [amountValid, setAmountValid] = useState<string>("");
+  const [total, setTotal] = useState<number>(0);
   const [refresh, setRefresh] = useState<boolean>(false);
   useEffect(() => {
     const refreshPage = async () => {
@@ -40,10 +65,14 @@ export const Donation = (): JSX.Element => {
     refreshPage();
   }, [refresh]);
   const onNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setName(event.target.value);
+    const { value } = event.target;
+    setName(value);
+    setNameValid(validateName(value));
   };
   const onAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(parseInt(event.target.value, 10));
+    const value = parseInt(event.target.value, 10);
+    setAmount(value);
+    setAmountValid(validateAmount(value));
   };
   const doRefresh = () => {
     setRefresh(!refresh);
@@ -53,7 +82,7 @@ export const Donation = (): JSX.Element => {
       name,
       amount: typeof amount === "string" ? 0 : amount || 0,
     });
-    if (res.result && res.result.error) {
+    if (res.result && !res.result.error) {
       doRefresh();
     }
   };
@@ -64,6 +93,7 @@ export const Donation = (): JSX.Element => {
           className="margin-tb-8 column-container ai-center-container"
           style={{ width: "80%", maxWidth: 500, padding: "10px" }}
         >
+          <Typography variant="h5">吉田さんプレゼント代</Typography>
           <Typography variant="h6">
             {`現在の支援総額：${thousandCommas(total || 0)}円`}
           </Typography>
@@ -78,19 +108,39 @@ export const Donation = (): JSX.Element => {
             </IconButton>
           </div>
           <div className="margin-tb-8 column-container each-margin-tb-8-container">
-            <TextField label="名前" value={name} onChange={onNameChange} />
+            <TextField
+              label="お名前"
+              error={!!nameValid}
+              helperText={nameValid}
+              value={name}
+              onChange={onNameChange}
+              inputProps={{
+                maxLength: 10,
+              }}
+            />
             <TextField
               label="金額"
+              error={!!amountValid}
+              helperText={amountValid}
               type="number"
               value={amount}
               onChange={onAmountChange}
             />
-            <Button color="primary" variant="contained" onClick={onDonateClick}>
+            <Button
+              color="primary"
+              variant="contained"
+              disabled={!!(nameValid || amountValid || isOverTarget(total))}
+              onClick={onDonateClick}
+            >
               支援する
             </Button>
+            <div className="margin-tb-8 row-container jc-flex-end-container">
+              <Typography>※お支払いは現金 or LinePayでお願いします</Typography>
+            </div>
           </div>
         </Card>
       </div>
+      {isOverTarget(total) && <Confetti />}
     </>
   );
 };
