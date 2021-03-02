@@ -66,17 +66,27 @@ export const Donation = (): JSX.Element => {
   const [amount, setAmount] = useState<number | string>("");
   const [amountValid, setAmountValid] = useState<string>("");
   const [total, setTotal] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const refreshPage = async () => {
-      const res = await fetchDonations();
-      if (res.body) {
-        setTotal(sumTotal(res.body));
+      try {
+        setIsLoading(true);
+        const res = await fetchDonations();
+        if (res.body) {
+          setTotal(sumTotal(res.body));
+        } else {
+          setTotal(sumTotal([]));
+        }
+        setName("");
+        setAmount("");
+      } catch (e) {
+        console.log(`Error : ${e.message}`);
+      } finally {
+        setIsLoading(false);
       }
-      setName("");
-      setAmount("");
     };
     refreshPage();
   }, [refresh]);
@@ -126,7 +136,7 @@ export const Donation = (): JSX.Element => {
               ・現在の支援総額
             </Typography>
             <Typography variant="h5" align="center">
-              {`${thousandCommas(total || 0)}円`}
+              {isLoading ? "loading..." : `${thousandCommas(total || 0)}円`}
             </Typography>
             <Typography
               style={{ fontSize: 14 }}
