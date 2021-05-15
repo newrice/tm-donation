@@ -13,6 +13,7 @@ import {
   validateName,
   validateComment,
 } from "./DonationDialogValidator";
+import settings from "../settings";
 import { DonationsModel } from "../types";
 
 export interface ConfirmProps extends DialogProps {
@@ -129,7 +130,10 @@ const DonationDialog = ({
             width: "100%",
           }}
           error={!!amountValid}
-          helperText={amountValid}
+          helperText={
+            amountValid ||
+            `推奨金額${settings.app.donation.寄付額.目安表示額}円`
+          }
           type="number"
           value={amount}
           onChange={onAmountChange}

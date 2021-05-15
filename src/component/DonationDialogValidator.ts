@@ -15,7 +15,7 @@ export const validateAmount = (amount: number | string): string => {
   if (!amount) {
     return "金額を入力してください";
   }
-  if (!isInteger(amount) || amount <= 寄付額.MIN || amount >= 寄付額.MAX) {
+  if (!isInteger(amount) || amount < 寄付額.MIN || amount > 寄付額.MAX) {
     return `${寄付額.MIN}〜${寄付額.MAX}の整数で入力してください`;
   }
   return "";
