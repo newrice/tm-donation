@@ -92,6 +92,10 @@ amplify-authenticator {
   flex-grow: 1;
 }
 
+.margin-8 {
+  margin: 8px;
+}
+
 .margin-tb-8 {
   margin: 8px 0;
 }

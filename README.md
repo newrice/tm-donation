@@ -40,6 +40,7 @@ interface response {
     {
       name: string;
       amount: number;
+      comment: string;
     },
   ];
 }
@@ -53,6 +54,8 @@ interface response {
 interface requset {
   name: string;
   amount: number;
+  email: string;
+  comment: string;
 }
 ```
 
