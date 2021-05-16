@@ -12,7 +12,7 @@ export const validateName = (name: string): string => {
 };
 
 export const validateAmount = (amount: number | string): string => {
-  if (!amount) {
+  if (typeof amount === "string" && !amount) {
     return "金額を入力してください";
   }
   if (!isInteger(amount) || amount < 寄付額.MIN || amount > 寄付額.MAX) {
